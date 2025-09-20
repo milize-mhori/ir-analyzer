@@ -31,8 +31,8 @@ export interface PromptList {
 export interface LLMModel {
   id: string;          // モデルID
   name: string;        // 表示名
-  provider: 'openai' | 'anthropic' | 'google'; // プロバイダー
-  apiEndpoint: string; // APIエンドポイント
+  provider: 'azure-openai' | 'gemini'; // プロバイダー
+  modelName: string;   // 実際のモデル名
   maxTokens: number;   // 最大トークン数
   pricing: {
     input: number;     // 入力トークン単価
@@ -103,9 +103,8 @@ export interface SavedSettingsData {
   lastUpdated: Date;   // 最終更新日時
 }
 
-// OpenAI API リクエスト形式
-export interface OpenAIRequest {
-  model: string;       // モデル名
+// Azure OpenAI API リクエスト形式
+export interface AzureOpenAIRequest {
   messages: {
     role: 'system' | 'user' | 'assistant';
     content: string;
@@ -115,8 +114,8 @@ export interface OpenAIRequest {
   top_p?: number;
 }
 
-// OpenAI API レスポンス形式
-export interface OpenAIResponse {
+// Azure OpenAI API レスポンス形式
+export interface AzureOpenAIResponse {
   id: string;
   object: string;
   created: number;
@@ -133,6 +132,37 @@ export interface OpenAIResponse {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
+  };
+}
+
+// Gemini API リクエスト形式
+export interface GeminiRequest {
+  contents: {
+    parts: {
+      text: string;
+    }[];
+  }[];
+  generationConfig?: {
+    temperature?: number;
+    topP?: number;
+    maxOutputTokens?: number;
+  };
+}
+
+// Gemini API レスポンス形式
+export interface GeminiResponse {
+  candidates: {
+    content: {
+      parts: {
+        text: string;
+      }[];
+    };
+    finishReason: string;
+  }[];
+  usageMetadata: {
+    promptTokenCount: number;
+    candidatesTokenCount: number;
+    totalTokenCount: number;
   };
 }
 
@@ -203,14 +233,47 @@ export const DEFAULT_PROMPTS: Prompt[] = [
 // デフォルトLLMモデル設定
 export const DEFAULT_LLM_MODELS: LLMModel[] = [
   {
-    id: 'gpt-4',
-    name: 'GPT-4',
-    provider: 'openai',
-    apiEndpoint: 'https://api.openai.com/v1/chat/completions',
+    id: 'azure-gpt-4',
+    name: 'Azure GPT-4',
+    provider: 'azure-openai',
+    modelName: 'gpt-4',
     maxTokens: 8192,
     pricing: {
       input: 0.03,   // $0.03 per 1K tokens
       output: 0.06,  // $0.06 per 1K tokens
+    },
+  },
+  {
+    id: 'azure-gpt-35-turbo',
+    name: 'Azure GPT-3.5 Turbo',
+    provider: 'azure-openai',
+    modelName: 'gpt-35-turbo',
+    maxTokens: 4096,
+    pricing: {
+      input: 0.0015, // $0.0015 per 1K tokens
+      output: 0.002, // $0.002 per 1K tokens
+    },
+  },
+  {
+    id: 'gemini-pro',
+    name: 'Gemini Pro',
+    provider: 'gemini',
+    modelName: 'gemini-pro',
+    maxTokens: 30720,
+    pricing: {
+      input: 0.000125, // $0.000125 per 1K tokens
+      output: 0.000375, // $0.000375 per 1K tokens
+    },
+  },
+  {
+    id: 'gemini-pro-1.5',
+    name: 'Gemini Pro 1.5',
+    provider: 'gemini',
+    modelName: 'gemini-1.5-pro',
+    maxTokens: 128000,
+    pricing: {
+      input: 0.00125, // $0.00125 per 1K tokens (up to 128K)
+      output: 0.00375, // $0.00375 per 1K tokens
     },
   },
 ];
