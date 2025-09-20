@@ -6,6 +6,7 @@ import { TabNavigation } from '@/components/TabNavigation';
 import { useTabState } from '@/hooks/useTabState';
 import { DEFAULT_LLM_MODELS } from '@/types';
 import { Card } from '@/components/ui/Card';
+import { SummaryInputTab } from '@/components/tabs/SummaryInputTab';
 
 export default function Home() {
   const { currentTab, switchTab, canNavigateToTab, getTabStatus } = useTabState();
@@ -15,22 +16,9 @@ export default function Home() {
     switch (currentTab) {
       case 'summary':
         return (
-          <Card title="企業要約入力" subtitle="基準企業と比較企業のIR要約を入力してください">
-            <div className="space-y-4">
-              <div className="text-gray-600">
-                ここに企業要約入力コンポーネントが配置されます（T4で実装予定）
-              </div>
-              <div className="bg-blue-50 p-4 rounded-md">
-                <h4 className="font-medium text-blue-900 mb-2">実装予定機能:</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• 基準企業の情報入力</li>
-                  <li>• 比較企業の情報入力（最大4社）</li>
-                  <li>• 企業追加・削除機能</li>
-                  <li>• バリデーション機能</li>
-                </ul>
-              </div>
-            </div>
-          </Card>
+          <SummaryInputTab 
+            onNext={() => switchTab('prompt')}
+          />
         );
       
       case 'prompt':
