@@ -17,13 +17,29 @@ import { AnalysisRequest, AnalysisResponse, LLMModel, DEFAULT_LLM_MODELS } from 
 function replacePromptVariables(prompt: string, companies: AnalysisRequest['companies']): string {
   let replacedPrompt = prompt;
 
-  // 基準企業の置換
+  // 基準企業の置換（新形式）
+  replacedPrompt = replacedPrompt.replace(
+    /{baseCompany}/g,
+    `【${companies.baseCompany.name}】\n${companies.baseCompany.summary}`
+  );
+
+  // 比較企業の置換（一括・新形式）
+  const comparisonCompaniesInfo = companies.comparisonCompanies
+    .map(company => `【${company.name}】\n${company.summary}`)
+    .join('\n\n');
+  
+  replacedPrompt = replacedPrompt.replace(
+    /{comparisonCompanies}/g,
+    comparisonCompaniesInfo
+  );
+
+  // 基準企業の置換（旧形式・後方互換性）
   replacedPrompt = replacedPrompt.replace(
     /{基準企業}/g,
     `【${companies.baseCompany.name}】\n${companies.baseCompany.summary}`
   );
 
-  // 比較企業の置換
+  // 比較企業の置換（個別・旧形式・後方互換性）
   companies.comparisonCompanies.forEach((company, index) => {
     const placeholder = `{比較企業${index + 1}}`;
     const replacement = `【${company.name}】\n${company.summary}`;

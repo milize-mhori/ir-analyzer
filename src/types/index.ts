@@ -192,13 +192,10 @@ export const DEFAULT_PROMPTS: Prompt[] = [
     name: '基本比較分析',
     content: `以下の企業のIR情報を比較分析してください：
 
-基準企業: {基準企業}
+基準企業: {baseCompany}
 
 比較企業:
-{比較企業1}
-{比較企業2}
-{比較企業3}
-{比較企業4}
+{comparisonCompanies}
 
 以下の観点で比較分析を行い、共通点と差異を明確にしてください：
 1. 事業戦略・方向性
@@ -212,13 +209,10 @@ export const DEFAULT_PROMPTS: Prompt[] = [
   {
     id: 'swot-analysis',
     name: 'SWOT分析',
-    content: `{基準企業}と以下の比較企業のSWOT分析を行ってください：
+    content: `{baseCompany}と以下の比較企業のSWOT分析を行ってください：
 
 比較企業:
-{比較企業1}
-{比較企業2}
-{比較企業3}
-{比較企業4}
+{comparisonCompanies}
 
 各企業について以下の4つの観点で分析し、最後に業界内での位置づけを比較してください：
 - Strengths (強み)
@@ -255,25 +249,25 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     },
   },
   {
-    id: 'gemini-pro',
-    name: 'Gemini Pro',
+    id: 'gemini-2.0-flash',
+    name: 'Gemini 2.0 Flash',
     provider: 'gemini',
-    modelName: 'gemini-pro',
-    maxTokens: 30720,
+    modelName: 'gemini-2.0-flash',
+    maxTokens: 1048576,
     pricing: {
-      input: 0.000125, // $0.000125 per 1K tokens
-      output: 0.000375, // $0.000375 per 1K tokens
+      input: 0.000075, // $0.000075 per 1K tokens (estimated)
+      output: 0.0003, // $0.0003 per 1K tokens (estimated)
     },
   },
   {
-    id: 'gemini-pro-1.5',
-    name: 'Gemini Pro 1.5',
+    id: 'gemini-1.5-pro',
+    name: 'Gemini 1.5 Pro',
     provider: 'gemini',
     modelName: 'gemini-1.5-pro',
-    maxTokens: 128000,
+    maxTokens: 2097152,
     pricing: {
-      input: 0.00125, // $0.00125 per 1K tokens (up to 128K)
-      output: 0.00375, // $0.00375 per 1K tokens
+      input: 0.00125, // $0.00125 per 1K tokens
+      output: 0.005, // $0.005 per 1K tokens
     },
   },
 ];

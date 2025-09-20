@@ -66,11 +66,13 @@ export const usePrompts = () => {
     
     // 有効な変数のリスト
     const validVariables = [
-      '{基準企業}',
-      '{比較企業1}',
-      '{比較企業2}',
-      '{比較企業3}',
-      '{比較企業4}',
+      '{baseCompany}',
+      '{comparisonCompanies}',
+      '{基準企業}',      // 後方互換性
+      '{比較企業1}',     // 後方互換性
+      '{比較企業2}',     // 後方互換性
+      '{比較企業3}',     // 後方互換性
+      '{比較企業4}',     // 後方互換性
     ];
 
     const validUsedVariables = uniqueVariables.filter(variable => 

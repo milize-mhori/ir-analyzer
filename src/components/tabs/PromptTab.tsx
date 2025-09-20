@@ -101,7 +101,7 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack }) => {
             label="プロンプト内容 *"
             value={currentPrompt.content}
             onChange={handleContentChange}
-            placeholder="LLMに送信するプロンプトを入力してください&#10;&#10;動的変数を使用できます：&#10;{基準企業} - 基準企業の情報&#10;{比較企業1} - 比較企業1の情報&#10;{比較企業2} - 比較企業2の情報&#10;..."
+            placeholder="LLMに送信するプロンプトを入力してください&#10;&#10;動的変数を使用できます：&#10;{baseCompany} - 基準企業の情報&#10;{comparisonCompanies} - 比較企業の情報（一括）&#10;{比較企業1} - 比較企業1の情報（個別）&#10;..."
             rows={12}
             autoResize
             error={contentError}
@@ -129,26 +129,29 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack }) => {
             <div className="bg-blue-50 p-4 rounded-md">
               <h4 className="font-medium text-blue-900 mb-2">利用可能な動的変数</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                <div><code className="bg-blue-100 px-2 py-1 rounded">{'{基準企業}'}</code> - 基準企業の情報</div>
-                <div><code className="bg-blue-100 px-2 py-1 rounded">{'{比較企業1}'}</code> - 比較企業1の情報</div>
-                <div><code className="bg-blue-100 px-2 py-1 rounded">{'{比較企業2}'}</code> - 比較企業2の情報</div>
-                <div><code className="bg-blue-100 px-2 py-1 rounded">{'{比較企業3}'}</code> - 比較企業3の情報</div>
-                <div><code className="bg-blue-100 px-2 py-1 rounded">{'{比較企業4}'}</code> - 比較企業4の情報</div>
+                <div><code className="bg-blue-100 px-2 py-1 rounded">{'{baseCompany}'}</code> - 基準企業の情報</div>
+                <div><code className="bg-blue-100 px-2 py-1 rounded">{'{comparisonCompanies}'}</code> - 比較企業の情報（一括）</div>
+                <div><code className="bg-gray-100 px-2 py-1 rounded">{'{基準企業}'}</code> - 基準企業（旧形式）</div>
+                <div><code className="bg-gray-100 px-2 py-1 rounded">{'{比較企業1}'}</code> - 比較企業1（旧形式）</div>
+                <div><code className="bg-gray-100 px-2 py-1 rounded">{'{比較企業2}'}</code> - 比較企業2（旧形式）</div>
+                <div><code className="bg-gray-100 px-2 py-1 rounded">{'{比較企業3}'}</code> - 比較企業3（旧形式）</div>
+              </div>
+              <div className="mt-2 text-xs text-blue-700">
+                💡 新形式（{'{baseCompany}'}、{'{comparisonCompanies}'}）の使用を推奨します
               </div>
             </div>
             
             <div className="bg-amber-50 p-4 rounded-md">
-              <h4 className="font-medium text-amber-900 mb-2">使用例</h4>
+              <h4 className="font-medium text-amber-900 mb-2">📝 プロンプト例</h4>
               <pre className="text-sm text-amber-800 whitespace-pre-wrap">
 {`以下の企業を比較分析してください：
 
-基準企業: {基準企業}
+基準企業: {baseCompany}
 
 比較企業:
-{比較企業1}
-{比較企業2}
+{comparisonCompanies}
 
-上記の企業について...`}
+財務指標と事業戦略の観点で分析してください。`}
               </pre>
             </div>
           </div>
