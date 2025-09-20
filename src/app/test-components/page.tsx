@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Loading, FullScreenLoading } from '@/components/ui/Loading';
-import { Toast, ToastContainer, ToastType } from '@/components/ui/Toast';
+import { ToastContainer, ToastType } from '@/components/ui/Toast';
 
 export default function TestComponentsPage() {
   const [inputValue, setInputValue] = useState('');
@@ -235,12 +236,12 @@ export default function TestComponentsPage() {
             メインページ（/）でヘッダーとタブナビゲーションの動作を確認できます。
           </p>
           <div className="flex space-x-4">
-            <a
+            <Link
               href="/"
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               メインページを確認
-            </a>
+            </Link>
           </div>
         </div>
       </Card>

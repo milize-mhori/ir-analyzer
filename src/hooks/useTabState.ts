@@ -8,7 +8,7 @@ export const useTabState = (initialTab: TabType = 'summary') => {
     setCurrentTab(tab);
   };
 
-  const canNavigateToTab = (tab: TabType): boolean => {
+  const canNavigateToTab = (): boolean => {
     // Phase 1では基本的なナビゲーション制限
     // 将来的にはデータの有無に基づいた制限を追加
     return true;

@@ -63,7 +63,6 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   const getTabClasses = (tab: TabConfig) => {
     const isActive = currentTab === tab.id;
     const isDisabled = !canNavigateToTab(tab.id);
-    const status = getTabStatus(tab.id);
     
     let baseClasses = 'group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium transition-colors duration-200 focus:z-10';
     
