@@ -7,6 +7,7 @@ import { useTabState } from '@/hooks/useTabState';
 import { DEFAULT_LLM_MODELS } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { SummaryInputTab } from '@/components/tabs/SummaryInputTab';
+import { PromptTab } from '@/components/tabs/PromptTab';
 
 export default function Home() {
   const { currentTab, switchTab, canNavigateToTab, getTabStatus } = useTabState();
@@ -23,22 +24,13 @@ export default function Home() {
       
       case 'prompt':
         return (
-          <Card title="分析プロンプト設定" subtitle="LLMに送信する分析プロンプトを設定してください">
-            <div className="space-y-4">
-              <div className="text-gray-600">
-                ここにプロンプト入力コンポーネントが配置されます（T5で実装予定）
-              </div>
-              <div className="bg-green-50 p-4 rounded-md">
-                <h4 className="font-medium text-green-900 mb-2">実装予定機能:</h4>
-                <ul className="text-sm text-green-800 space-y-1">
-                  <li>• プロンプトテンプレートの選択</li>
-                  <li>• カスタムプロンプトの入力</li>
-                  <li>• 動的変数の置換プレビュー</li>
-                  <li>• プロンプトの保存・読み込み</li>
-                </ul>
-              </div>
-            </div>
-          </Card>
+          <PromptTab 
+            onExecute={(prompt) => {
+              console.log('分析実行:', prompt);
+              switchTab('result');
+            }}
+            onBack={() => switchTab('summary')}
+          />
         );
       
       case 'result':
