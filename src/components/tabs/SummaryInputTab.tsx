@@ -6,9 +6,11 @@ import { useCompanies } from '@/hooks/useCompanies';
 
 interface SummaryInputTabProps {
   onNext?: () => void;
+  companiesHook?: ReturnType<typeof useCompanies>;
 }
 
-export const SummaryInputTab: React.FC<SummaryInputTabProps> = ({ onNext }) => {
+export const SummaryInputTab: React.FC<SummaryInputTabProps> = ({ onNext, companiesHook }) => {
+  const localHook = useCompanies();
   const {
     companies,
     updateBaseCompany,
@@ -17,7 +19,7 @@ export const SummaryInputTab: React.FC<SummaryInputTabProps> = ({ onNext }) => {
     removeComparisonCompany,
     validateCompanies,
     getInputStatus,
-  } = useCompanies();
+  } = companiesHook || localHook;
 
   const inputStatus = getInputStatus();
   const validation = validateCompanies();

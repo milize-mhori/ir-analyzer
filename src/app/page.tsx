@@ -8,10 +8,19 @@ import { DEFAULT_LLM_MODELS } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { SummaryInputTab } from '@/components/tabs/SummaryInputTab';
 import { PromptTab } from '@/components/tabs/PromptTab';
+import { ResultTab } from '@/components/tabs/ResultTab';
+import { useCompanies } from '@/hooks/useCompanies';
+import { useLLM } from '@/hooks/useLLM';
 
 export default function Home() {
   const { currentTab, switchTab, canNavigateToTab, getTabStatus } = useTabState();
   const [selectedModelId, setSelectedModelId] = useState(DEFAULT_LLM_MODELS[0].id);
+  
+  // 企業データ管理
+  const companiesHook = useCompanies();
+  
+  // LLM実行管理
+  const { isLoading, error, result, executeAnalysis, clearResult } = useLLM();
 
   const renderTabContent = () => {
     switch (currentTab) {
@@ -19,15 +28,31 @@ export default function Home() {
         return (
           <SummaryInputTab 
             onNext={() => switchTab('prompt')}
+            companiesHook={companiesHook}
           />
         );
       
       case 'prompt':
         return (
           <PromptTab 
-            onExecute={(prompt) => {
-              console.log('分析実行:', prompt);
-              switchTab('result');
+            onExecute={async (prompt) => {
+              const selectedModel = DEFAULT_LLM_MODELS.find(m => m.id === selectedModelId);
+              if (!selectedModel) {
+                console.error('選択されたモデルが見つかりません');
+                return;
+              }
+
+              // 分析実行
+              const result = await executeAnalysis(
+                companiesHook.companies,
+                prompt,
+                selectedModel
+              );
+
+              // 成功時は結果タブに遷移
+              if (result) {
+                switchTab('result');
+              }
             }}
             onBack={() => switchTab('summary')}
           />
@@ -35,22 +60,26 @@ export default function Home() {
       
       case 'result':
         return (
-          <Card title="分析結果" subtitle="LLMによる比較分析の結果を表示します">
-            <div className="space-y-4">
-              <div className="text-gray-600">
-                ここに結果表示コンポーネントが配置されます（T7で実装予定）
-              </div>
-              <div className="bg-purple-50 p-4 rounded-md">
-                <h4 className="font-medium text-purple-900 mb-2">実装予定機能:</h4>
-                <ul className="text-sm text-purple-800 space-y-1">
-                  <li>• 分析結果の表示</li>
-                  <li>• 使用量情報の表示</li>
-                  <li>• 結果のコピー・保存機能</li>
-                  <li>• 再実行機能</li>
-                </ul>
-              </div>
-            </div>
-          </Card>
+          <ResultTab
+            result={result}
+            isLoading={isLoading}
+            error={error}
+            onBack={() => switchTab('prompt')}
+            onReExecute={async () => {
+              const selectedModel = DEFAULT_LLM_MODELS.find(m => m.id === selectedModelId);
+              if (!selectedModel || !result) return;
+
+              await executeAnalysis(
+                result.companies,
+                result.prompt,
+                selectedModel
+              );
+            }}
+            onNewAnalysis={() => {
+              clearResult();
+              switchTab('summary');
+            }}
+          />
         );
       
       default:
