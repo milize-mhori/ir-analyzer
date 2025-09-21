@@ -233,7 +233,7 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     provider: 'azure-openai',
     modelName: 'gpt-4o',
     deploymentName: process.env.AZURE_OPENAI_GPT4O_DEPLOYMENT || 'gpt-4o',
-    maxTokens: 128000,
+    maxTokens: 4096,   // GPT-4oの最大出力トークン数
     pricing: {
       input: 0.0025,  // $0.0025 per 1K tokens
       output: 0.01,   // $0.01 per 1K tokens
@@ -245,7 +245,7 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     provider: 'azure-openai',
     modelName: 'gpt-4o-mini',
     deploymentName: process.env.AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT || 'gpt-4o-mini',
-    maxTokens: 128000,
+    maxTokens: 16384,  // GPT-4o Miniの最大出力トークン数
     pricing: {
       input: 0.00015, // $0.00015 per 1K tokens
       output: 0.0006, // $0.0006 per 1K tokens
@@ -257,7 +257,7 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     provider: 'azure-openai',
     modelName: 'gpt-4.1-mini',
     deploymentName: process.env.AZURE_OPENAI_GPT41_MINI_DEPLOYMENT || 'gpt-4.1-mini',
-    maxTokens: 128000,
+    maxTokens: 16384,  // GPT-4.1 Miniの最大出力トークン数
     pricing: {
       input: 0.00015, // $0.00015 per 1K tokens
       output: 0.0006, // $0.0006 per 1K tokens
@@ -268,7 +268,7 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     name: 'Gemini 2.0 Flash',
     provider: 'gemini',
     modelName: 'gemini-2.0-flash',
-    maxTokens: 1048576,
+    maxTokens: 8192,   // Gemini 2.0 Flashの最大出力トークン数
     pricing: {
       input: 0.000075, // $0.000075 per 1K tokens (estimated)
       output: 0.0003, // $0.0003 per 1K tokens (estimated)
@@ -279,7 +279,7 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     name: 'Gemini 1.5 Pro',
     provider: 'gemini',
     modelName: 'gemini-1.5-pro',
-    maxTokens: 2097152,
+    maxTokens: 8192,   // Gemini 1.5 Proの最大出力トークン数
     pricing: {
       input: 0.00125, // $0.00125 per 1K tokens
       output: 0.005, // $0.005 per 1K tokens

@@ -232,3 +232,4 @@ export const ResultTab: React.FC<ResultTabProps> = ({
     </div>
   );
 };
+

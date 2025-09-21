@@ -153,3 +153,4 @@ ${result.companies.comparisonCompanies.map((company, index) =>
     </div>
   );
 };
+

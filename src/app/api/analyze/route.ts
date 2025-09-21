@@ -78,6 +78,7 @@ async function executeLLMRequest(
         throw new LLMAPIError('Azure OpenAI API が設定されていません', 'azure-openai');
       }
 
+      // Azure OpenAIでは出力トークン数をモデル固有の制限に設定
       const request = convertToAzureOpenAIRequest(prompt, model.maxTokens);
       // Azure OpenAIではデプロイメント名を使用
       const deploymentName = model.deploymentName || model.modelName;
@@ -90,6 +91,7 @@ async function executeLLMRequest(
         throw new LLMAPIError('Gemini API が設定されていません', 'gemini');
       }
 
+      // Geminiでは出力トークン数をモデル固有の制限に設定
       const request = convertToGeminiRequest(prompt, model.maxTokens);
       const response = await client.generateContent(model.modelName, request);
       return normalizeGeminiResponse(response, model.modelName);

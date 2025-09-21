@@ -89,3 +89,4 @@ export function getAzureAuth(): AzureADAuth {
   }
   return azureAuthInstance;
 }
+
