@@ -79,7 +79,9 @@ async function executeLLMRequest(
       }
 
       const request = convertToAzureOpenAIRequest(prompt, model.maxTokens);
-      const response = await client.chat(model.modelName, request);
+      // Azure OpenAIではデプロイメント名を使用
+      const deploymentName = model.deploymentName || model.modelName;
+      const response = await client.chat(deploymentName, request);
       return normalizeAzureOpenAIResponse(response);
 
     } else if (model.provider === 'gemini') {

@@ -231,6 +231,7 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     name: 'Azure GPT-4',
     provider: 'azure-openai',
     modelName: 'gpt-4',
+    deploymentName: process.env.AZURE_OPENAI_GPT4_DEPLOYMENT || 'gpt-4-deployment',
     maxTokens: 8192,
     pricing: {
       input: 0.03,   // $0.03 per 1K tokens
@@ -242,6 +243,7 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     name: 'Azure GPT-3.5 Turbo',
     provider: 'azure-openai',
     modelName: 'gpt-35-turbo',
+    deploymentName: process.env.AZURE_OPENAI_GPT35_DEPLOYMENT || 'gpt-35-turbo-deployment',
     maxTokens: 4096,
     pricing: {
       input: 0.0015, // $0.0015 per 1K tokens
