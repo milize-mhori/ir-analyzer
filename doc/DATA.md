@@ -1,5 +1,12 @@
-// 企業データの型定義
-export interface Company {
+
+# データ一覧
+
+## 1. データ構造定義
+
+### 1.1 企業データ
+```typescript
+// 企業情報の型定義
+interface Company {
   id: string;          // 一意識別子
   name: string;        // 企業名
   summary: string;     // IR要約テキスト
@@ -7,13 +14,16 @@ export interface Company {
 }
 
 // 企業リストの型定義
-export interface CompanyList {
+interface CompanyList {
   baseCompany: Company;      // 基準企業（必須）
   comparisonCompanies: Company[]; // 比較企業（1-4社）
 }
+```
 
+### 1.2 プロンプトデータ
+```typescript
 // プロンプト情報の型定義
-export interface Prompt {
+interface Prompt {
   id: string;          // 一意識別子
   name: string;        // プロンプト名
   content: string;     // プロンプト内容
@@ -22,13 +32,16 @@ export interface Prompt {
 }
 
 // プロンプトリストの型定義
-export interface PromptList {
+interface PromptList {
   prompts: Prompt[];   // 保存済みプロンプト一覧
   selectedId?: string; // 現在選択中のプロンプトID
 }
+```
 
+### 1.3 LLM設定データ
+```typescript
 // LLMモデル情報
-export interface LLMModel {
+interface LLMModel {
   id: string;          // モデルID
   name: string;        // 表示名
   provider: 'azure-openai' | 'gemini'; // プロバイダー
@@ -42,14 +55,17 @@ export interface LLMModel {
 }
 
 // LLM設定
-export interface LLMConfig {
+interface LLMConfig {
   models: LLMModel[];  // 利用可能モデル一覧
   selectedModelId: string; // 現在選択中のモデル
   apiKeys: Record<string, string>; // プロバイダー別APIキー
 }
+```
 
+### 1.4 実行結果データ
+```typescript
 // 分析実行結果
-export interface AnalysisResult {
+interface AnalysisResult {
   id: string;          // 実行ID
   timestamp: Date;     // 実行日時
   model: LLMModel;     // 使用モデル
@@ -67,12 +83,15 @@ export interface AnalysisResult {
   status: 'success' | 'error'; // 実行ステータス
   error?: string;      // エラーメッセージ（エラー時）
 }
+```
 
+### 1.5 アプリケーション状態データ
+```typescript
 // 現在のタブ状態
-export type TabType = 'summary' | 'prompt' | 'result';
+type TabType = 'summary' | 'prompt' | 'result';
 
 // アプリケーション状態
-export interface AppState {
+interface AppState {
   currentTab: TabType;
   companies: CompanyList;
   currentPrompt: Prompt | null;
@@ -82,30 +101,46 @@ export interface AppState {
   isLoading: boolean;
   error: string | null;
 }
+```
 
+## 2. ローカルストレージデータ
+
+### 2.1 保存キー定義
+```typescript
 // ローカルストレージキー
-export const LOCAL_STORAGE_KEYS = {
+const LOCAL_STORAGE_KEYS = {
   SAVED_PROMPTS: 'ir-analyzer-prompts',
   LLM_SETTINGS: 'ir-analyzer-llm-settings',
   RECENT_COMPANIES: 'ir-analyzer-recent-companies', // Phase 3
 } as const;
+```
 
+### 2.2 プロンプト保存データ
+```typescript
 // ローカルストレージに保存するプロンプトデータ
-export interface SavedPromptsData {
+interface SavedPromptsData {
   version: string;     // データバージョン
   prompts: Prompt[];   // プロンプト一覧
   lastUpdated: Date;   // 最終更新日時
 }
+```
 
+### 2.3 設定保存データ
+```typescript
 // ローカルストレージに保存する設定データ
-export interface SavedSettingsData {
+interface SavedSettingsData {
   version: string;     // データバージョン
   selectedModelId: string; // 選択中のモデル
   lastUpdated: Date;   // 最終更新日時
 }
+```
 
+## 3. API データ
+
+### 3.1 Azure OpenAI API リクエスト
+```typescript
 // Azure OpenAI API リクエスト形式
-export interface AzureOpenAIRequest {
+interface AzureOpenAIRequest {
   messages: {
     role: 'system' | 'user' | 'assistant';
     content: string;
@@ -114,9 +149,12 @@ export interface AzureOpenAIRequest {
   temperature?: number;
   top_p?: number;
 }
+```
 
+### 3.2 Azure OpenAI API レスポンス
+```typescript
 // Azure OpenAI API レスポンス形式
-export interface AzureOpenAIResponse {
+interface AzureOpenAIResponse {
   id: string;
   object: string;
   created: number;
@@ -135,9 +173,12 @@ export interface AzureOpenAIResponse {
     total_tokens: number;
   };
 }
+```
 
+### 3.3 Gemini API リクエスト
+```typescript
 // Gemini API リクエスト形式
-export interface GeminiRequest {
+interface GeminiRequest {
   contents: {
     parts: {
       text: string;
@@ -149,9 +190,12 @@ export interface GeminiRequest {
     maxOutputTokens?: number;
   };
 }
+```
 
+### 3.4 Gemini API レスポンス
+```typescript
 // Gemini API レスポンス形式
-export interface GeminiResponse {
+interface GeminiResponse {
   candidates: {
     content: {
       parts: {
@@ -166,16 +210,19 @@ export interface GeminiResponse {
     totalTokenCount: number;
   };
 }
+```
 
+### 3.5 内部API リクエスト/レスポンス
+```typescript
 // 内部API リクエスト（フロントエンド → バックエンド）
-export interface AnalysisRequest {
+interface AnalysisRequest {
   companies: CompanyList;
   prompt: string;      // 置換済みプロンプト
   modelId: string;     // 使用モデルID
 }
 
 // 内部API レスポンス（バックエンド → フロントエンド）
-export interface AnalysisResponse {
+interface AnalysisResponse {
   success: boolean;
   result?: string;     // 分析結果
   usage?: {
@@ -185,9 +232,13 @@ export interface AnalysisResponse {
   };
   error?: string;      // エラーメッセージ
 }
+```
 
-// デフォルトプロンプトテンプレート
-export const DEFAULT_PROMPTS: Prompt[] = [
+## 4. デフォルトデータ
+
+### 4.1 初期プロンプトテンプレート
+```typescript
+const DEFAULT_PROMPTS: Prompt[] = [
   {
     id: 'default-comparison',
     name: '基本比較分析',
@@ -222,6 +273,58 @@ export const DEFAULT_PROMPTS: Prompt[] = [
 - Threats (脅威)`,
     createdAt: new Date(),
     updatedAt: new Date(),
+  }
+];
+```
+
+### 4.2 LLMモデル設定
+```typescript
+const DEFAULT_LLM_MODELS: LLMModel[] = [
+  {
+    id: 'azure-gpt-4o',
+    name: 'Azure GPT-4o',
+    provider: 'azure-openai',
+    modelName: 'gpt-4o',
+    deploymentName: 'gpt-4o',
+    maxTokens: 4096,
+    pricing: {
+      input: 0.0025,  // $0.0025 per 1K tokens
+      output: 0.01,   // $0.01 per 1K tokens
+    },
+  },
+  {
+    id: 'azure-gpt-4o-mini',
+    name: 'Azure GPT-4o Mini',
+    provider: 'azure-openai',
+    modelName: 'gpt-4o-mini',
+    deploymentName: 'gpt-4o-mini',
+    maxTokens: 16384,
+    pricing: {
+      input: 0.00015, // $0.00015 per 1K tokens
+      output: 0.0006, // $0.0006 per 1K tokens
+    },
+  },
+  {
+    id: 'gemini-2.0-flash',
+    name: 'Gemini 2.0 Flash',
+    provider: 'gemini',
+    modelName: 'gemini-2.0-flash',
+    maxTokens: 8192,
+    pricing: {
+      input: 0.000075, // $0.000075 per 1K tokens
+      output: 0.0003,  // $0.0003 per 1K tokens
+    },
+  },
+  {
+    id: 'gemini-1.5-pro',
+    name: 'Gemini 1.5 Pro',
+    provider: 'gemini',
+    modelName: 'gemini-1.5-pro',
+    maxTokens: 8192,
+    pricing: {
+      input: 0.00125, // $0.00125 per 1K tokens
+      output: 0.005,  // $0.005 per 1K tokens
+    },
   },
   {
     id: 'summary-comparison-v1',
@@ -256,64 +359,71 @@ export const DEFAULT_PROMPTS: Prompt[] = [
   }
 ];
 
-// デフォルトLLMモデル設定
-export const DEFAULT_LLM_MODELS: LLMModel[] = [
-  {
-    id: 'azure-gpt-4o',
-    name: 'Azure GPT-4o',
-    provider: 'azure-openai',
-    modelName: 'gpt-4o',
-    deploymentName: process.env.AZURE_OPENAI_GPT4O_DEPLOYMENT || 'gpt-4o',
-    maxTokens: 4096,   // GPT-4oの最大出力トークン数
-    pricing: {
-      input: 0.0025,  // $0.0025 per 1K tokens
-      output: 0.01,   // $0.01 per 1K tokens
-    },
-  },
-  {
-    id: 'azure-gpt-4o-mini',
-    name: 'Azure GPT-4o Mini',
-    provider: 'azure-openai',
-    modelName: 'gpt-4o-mini',
-    deploymentName: process.env.AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT || 'gpt-4o-mini',
-    maxTokens: 16384,  // GPT-4o Miniの最大出力トークン数
-    pricing: {
-      input: 0.00015, // $0.00015 per 1K tokens
-      output: 0.0006, // $0.0006 per 1K tokens
-    },
-  },
-  {
-    id: 'azure-gpt-4.1-mini',
-    name: 'Azure GPT-4.1 Mini',
-    provider: 'azure-openai',
-    modelName: 'gpt-4.1-mini',
-    deploymentName: process.env.AZURE_OPENAI_GPT41_MINI_DEPLOYMENT || 'gpt-4.1-mini',
-    maxTokens: 16384,  // GPT-4.1 Miniの最大出力トークン数
-    pricing: {
-      input: 0.00015, // $0.00015 per 1K tokens
-      output: 0.0006, // $0.0006 per 1K tokens
-    },
-  },
-  {
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
-    provider: 'gemini',
-    modelName: 'gemini-2.0-flash',
-    maxTokens: 8192,   // Gemini 2.0 Flashの最大出力トークン数
-    pricing: {
-      input: 0.000075, // $0.000075 per 1K tokens (estimated)
-      output: 0.0003, // $0.0003 per 1K tokens (estimated)
-    },
-  },
-  {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
-    provider: 'gemini',
-    modelName: 'gemini-1.5-pro',
-    maxTokens: 8192,   // Gemini 1.5 Proの最大出力トークン数
-    pricing: {
-      input: 0.00125, // $0.00125 per 1K tokens
-      output: 0.005, // $0.005 per 1K tokens
-    },
-  },
-];
+// 使用可能なプロンプト変数形式
+const PROMPT_VARIABLES = {
+  // 新形式（推奨）
+  baseCompany: '{baseCompany}',               // 基準企業の情報（企業名 + 要約）
+  comparisonCompanies: '{comparisonCompanies}', // 比較企業の情報（全企業の名前 + 要約）
+  
+  // 詳細形式
+  base_corp_name: '{base_corp_name}',         // 基準企業名のみ
+  base_corp_summary: '{base_corp_summary}',   // 基準企業要約のみ
+  comp1_corp_name: '{comp1_corp_name}',       // 比較企業1の企業名のみ
+  comp1_corp_summary: '{comp1_corp_summary}', // 比較企業1の要約のみ
+  // comp2, comp3, comp4も同様...
+  
+  // 統合形式
+  summary_list: '{summary_list}',             // 全企業の要約をリスト形式で統合
+  comparison_corp_names: '{comparison_corp_names}', // 比較企業名をカンマ区切りで列挙
+  
+  // 旧形式（後方互換性のため保持）
+  基準企業: '{基準企業}',                     // 基準企業の情報
+  比較企業1: '{比較企業1}',                   // 比較企業1の情報
+  比較企業2: '{比較企業2}',                   // 比較企業2の情報
+  比較企業3: '{比較企業3}',                   // 比較企業3の情報
+  比較企業4: '{比較企業4}',                   // 比較企業4の情報
+} as const;
+```
+
+## 5. データフロー
+
+### 5.1 データの流れ
+```
+1. ユーザー入力
+   ↓
+2. React State (一時保存)
+   ↓
+3. バリデーション
+   ↓
+4. Local Storage (プロンプトのみ永続化)
+   ↓
+5. API 送信 (実行時)
+   ↓
+6. 結果表示
+```
+
+### 5.2 状態管理の責任範囲
+- **useState**: コンポーネント内の一時的な状態
+- **カスタムフック**: 複数コンポーネント間での状態共有
+- **Local Storage**: プロンプトの永続化
+- **API**: LLM実行とレスポンス取得
+
+## 6. 実装優先度
+
+### Phase 1 (MVP)
+- [x] Company, CompanyList 型定義
+- [ ] 基本的な AppState 管理
+- [ ] OpenAI API 連携データ構造
+- [ ] 基本的なプロンプト管理
+
+### Phase 2
+- [ ] Prompt, PromptList 完全実装
+- [ ] Local Storage データ管理
+- [ ] AnalysisResult 完全実装
+- [ ] 複数LLM対応データ構造
+
+### Phase 3
+- [ ] データバージョニング
+- [ ] データ移行機能
+- [ ] 詳細な使用量追跡
+- [ ] パフォーマンス最適化

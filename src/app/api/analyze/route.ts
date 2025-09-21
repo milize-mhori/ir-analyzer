@@ -13,6 +13,21 @@ import {
 } from '@/utils/llm-clients';
 import { AnalysisRequest, AnalysisResponse, LLMModel, DEFAULT_LLM_MODELS } from '@/types';
 
+// summary_listの動的生成
+function generateSummaryList(companies: AnalysisRequest['companies']): string {
+  const summaryItems: string[] = [];
+
+  // 基準企業を追加
+  summaryItems.push(`##\n${companies.baseCompany.name}\n${companies.baseCompany.summary}\n##`);
+
+  // 比較企業を追加
+  companies.comparisonCompanies.forEach((company) => {
+    summaryItems.push(`##\n${company.name}\n${company.summary}\n##`);
+  });
+
+  return summaryItems.join('\n');
+}
+
 // プロンプト内の動的変数を企業データで置換
 function replacePromptVariables(prompt: string, companies: AnalysisRequest['companies']): string {
   let replacedPrompt = prompt;
@@ -50,6 +65,35 @@ function replacePromptVariables(prompt: string, companies: AnalysisRequest['comp
   for (let i = companies.comparisonCompanies.length + 1; i <= 4; i++) {
     replacedPrompt = replacedPrompt.replace(new RegExp(`{比較企業${i}}`, 'g'), '');
   }
+
+  // 新しい変数形式の置換（企業名のみ）
+  replacedPrompt = replacedPrompt.replace(/{base_corp_name}/g, companies.baseCompany.name);
+  
+  // 新しい変数形式の置換（基準企業要約）
+  replacedPrompt = replacedPrompt.replace(/{base_corp_summary}/g, companies.baseCompany.summary);
+
+  // 新しい変数形式の置換（比較企業名・要約）
+  companies.comparisonCompanies.forEach((company, index) => {
+    const namePattern = new RegExp(`{comp${index + 1}_corp_name}`, 'g');
+    const summaryPattern = new RegExp(`{comp${index + 1}_corp_summary}`, 'g');
+    
+    replacedPrompt = replacedPrompt.replace(namePattern, company.name);
+    replacedPrompt = replacedPrompt.replace(summaryPattern, company.summary);
+  });
+
+  // 空の比較企業プレースホルダーを削除（新形式）
+  for (let i = companies.comparisonCompanies.length + 1; i <= 4; i++) {
+    replacedPrompt = replacedPrompt.replace(new RegExp(`{comp${i}_corp_name}`, 'g'), '');
+    replacedPrompt = replacedPrompt.replace(new RegExp(`{comp${i}_corp_summary}`, 'g'), '');
+  }
+
+  // 統合変数の置換（summary_list）
+  const summaryListContent = generateSummaryList(companies);
+  replacedPrompt = replacedPrompt.replace(/{summary_list}/g, summaryListContent);
+
+  // 比較企業名一覧の置換
+  const comparisonCorpNames = companies.comparisonCompanies.map(company => company.name).join(',');
+  replacedPrompt = replacedPrompt.replace(/{comparison_corp_names}/g, comparisonCorpNames);
 
   return replacedPrompt;
 }

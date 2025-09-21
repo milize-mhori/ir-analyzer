@@ -55,6 +55,7 @@ export default function Home() {
               }
             }}
             onBack={() => switchTab('summary')}
+            companiesHook={companiesHook}
           />
         );
       
