@@ -1,28 +1,60 @@
 // Azure OpenAI と Gemini API クライアント
 
 import { AzureOpenAIRequest, AzureOpenAIResponse, GeminiRequest, GeminiResponse } from '@/types';
+import { AzureADAuth } from './azure-auth';
 
 // Azure OpenAI クライアント
 export class AzureOpenAIClient {
   private endpoint: string;
-  private apiKey: string;
+  private apiKey?: string;
   private apiVersion: string;
+  private useAzureAD: boolean;
+  private azureAuth?: AzureADAuth;
 
   constructor() {
     this.endpoint = process.env.AZURE_OPENAI_ENDPOINT || '';
-    this.apiKey = process.env.AZURE_OPENAI_API_KEY || '';
+    this.apiKey = process.env.AZURE_OPENAI_API_KEY;
     this.apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
+    
+    // Azure AD認証が利用可能かチェック
+    this.useAzureAD = AzureADAuth.isConfigured() && !this.apiKey;
+    
+    if (this.useAzureAD) {
+      try {
+        this.azureAuth = new AzureADAuth();
+      } catch (error) {
+        console.warn('Azure AD認証の初期化に失敗:', error);
+        this.useAzureAD = false;
+      }
+    }
   }
 
   async chat(deploymentName: string, request: AzureOpenAIRequest): Promise<AzureOpenAIResponse> {
     const url = `${this.endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${this.apiVersion}`;
 
+    // 認証ヘッダーの準備
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (this.useAzureAD && this.azureAuth) {
+      // Azure AD認証を使用
+      try {
+        const accessToken = await this.azureAuth.getAccessToken();
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      } catch (error) {
+        throw new Error(`Azure AD認証に失敗しました: ${error}`);
+      }
+    } else if (this.apiKey) {
+      // APIキー認証を使用
+      headers['api-key'] = this.apiKey;
+    } else {
+      throw new Error('Azure OpenAI の認証設定が不完全です（APIキーまたはAzure AD認証が必要）');
+    }
+
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': this.apiKey,
-      },
+      headers,
       body: JSON.stringify(request),
     });
 
@@ -35,7 +67,13 @@ export class AzureOpenAIClient {
   }
 
   isConfigured(): boolean {
-    return !!(this.endpoint && this.apiKey);
+    return !!(this.endpoint && (this.apiKey || this.useAzureAD));
+  }
+
+  getAuthMethod(): 'api-key' | 'azure-ad' | 'none' {
+    if (this.useAzureAD) return 'azure-ad';
+    if (this.apiKey) return 'api-key';
+    return 'none';
   }
 }
 
