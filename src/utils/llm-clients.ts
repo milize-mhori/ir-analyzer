@@ -10,14 +10,18 @@ export class AzureOpenAIClient {
   private apiVersion: string;
   private useAzureAD: boolean;
   private azureAuth?: AzureADAuth;
+  private targetUri?: string;
+  private targetKey?: string;
 
   constructor() {
     this.endpoint = process.env.AZURE_OPENAI_ENDPOINT || '';
     this.apiKey = process.env.AZURE_OPENAI_API_KEY;
     this.apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
+    this.targetUri = process.env.AZURE_OPENAI_TARGET_URI;
+    this.targetKey = process.env.AZURE_OPENAI_TARGET_KEY;
     
     // Azure AD認証が利用可能かチェック
-    this.useAzureAD = AzureADAuth.isConfigured() && !this.apiKey;
+    this.useAzureAD = AzureADAuth.isConfigured() && !this.apiKey && !this.targetKey;
     
     if (this.useAzureAD) {
       try {
@@ -30,7 +34,9 @@ export class AzureOpenAIClient {
   }
 
   async chat(deploymentName: string, request: AzureOpenAIRequest): Promise<AzureOpenAIResponse> {
-    const url = `${this.endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${this.apiVersion}`;
+    // エンドポイントの決定（ターゲットURI優先）
+    const baseUrl = this.targetUri || this.endpoint;
+    const url = `${baseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=${this.apiVersion}`;
 
     // 認証ヘッダーの準備
     const headers: Record<string, string> = {
@@ -45,11 +51,14 @@ export class AzureOpenAIClient {
       } catch (error) {
         throw new Error(`Azure AD認証に失敗しました: ${error}`);
       }
+    } else if (this.targetKey) {
+      // ターゲットキー認証を使用
+      headers['api-key'] = this.targetKey;
     } else if (this.apiKey) {
-      // APIキー認証を使用
+      // 従来のAPIキー認証を使用
       headers['api-key'] = this.apiKey;
     } else {
-      throw new Error('Azure OpenAI の認証設定が不完全です（APIキーまたはAzure AD認証が必要）');
+      throw new Error('Azure OpenAI の認証設定が不完全です（APIキー、ターゲットキー、またはAzure AD認証が必要）');
     }
 
     const response = await fetch(url, {
@@ -67,13 +76,21 @@ export class AzureOpenAIClient {
   }
 
   isConfigured(): boolean {
-    return !!(this.endpoint && (this.apiKey || this.useAzureAD));
+    return !!(
+      (this.endpoint || this.targetUri) && 
+      (this.apiKey || this.targetKey || this.useAzureAD)
+    );
   }
 
-  getAuthMethod(): 'api-key' | 'azure-ad' | 'none' {
+  getAuthMethod(): 'api-key' | 'target-key' | 'azure-ad' | 'none' {
     if (this.useAzureAD) return 'azure-ad';
+    if (this.targetKey) return 'target-key';
     if (this.apiKey) return 'api-key';
     return 'none';
+  }
+
+  getEndpoint(): string {
+    return this.targetUri || this.endpoint;
   }
 }
 
