@@ -33,6 +33,7 @@ export interface LLMModel {
   name: string;        // 表示名
   provider: 'azure-openai' | 'gemini'; // プロバイダー
   modelName: string;   // 実際のモデル名
+  deploymentName?: string; // Azure OpenAI デプロイメント名（Azure OpenAI用）
   maxTokens: number;   // 最大トークン数
   pricing: {
     input: number;     // 入力トークン単価
@@ -227,27 +228,39 @@ export const DEFAULT_PROMPTS: Prompt[] = [
 // デフォルトLLMモデル設定
 export const DEFAULT_LLM_MODELS: LLMModel[] = [
   {
-    id: 'azure-gpt-4',
-    name: 'Azure GPT-4',
+    id: 'azure-gpt-4o',
+    name: 'Azure GPT-4o',
     provider: 'azure-openai',
-    modelName: 'gpt-4',
-    deploymentName: process.env.AZURE_OPENAI_GPT4_DEPLOYMENT || 'gpt-4-deployment',
-    maxTokens: 8192,
+    modelName: 'gpt-4o',
+    deploymentName: process.env.AZURE_OPENAI_GPT4O_DEPLOYMENT || 'gpt-4o',
+    maxTokens: 128000,
     pricing: {
-      input: 0.03,   // $0.03 per 1K tokens
-      output: 0.06,  // $0.06 per 1K tokens
+      input: 0.0025,  // $0.0025 per 1K tokens
+      output: 0.01,   // $0.01 per 1K tokens
     },
   },
   {
-    id: 'azure-gpt-35-turbo',
-    name: 'Azure GPT-3.5 Turbo',
+    id: 'azure-gpt-4o-mini',
+    name: 'Azure GPT-4o Mini',
     provider: 'azure-openai',
-    modelName: 'gpt-35-turbo',
-    deploymentName: process.env.AZURE_OPENAI_GPT35_DEPLOYMENT || 'gpt-35-turbo-deployment',
-    maxTokens: 4096,
+    modelName: 'gpt-4o-mini',
+    deploymentName: process.env.AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT || 'gpt-4o-mini',
+    maxTokens: 128000,
     pricing: {
-      input: 0.0015, // $0.0015 per 1K tokens
-      output: 0.002, // $0.002 per 1K tokens
+      input: 0.00015, // $0.00015 per 1K tokens
+      output: 0.0006, // $0.0006 per 1K tokens
+    },
+  },
+  {
+    id: 'azure-gpt-4.1-mini',
+    name: 'Azure GPT-4.1 Mini',
+    provider: 'azure-openai',
+    modelName: 'gpt-4.1-mini',
+    deploymentName: process.env.AZURE_OPENAI_GPT41_MINI_DEPLOYMENT || 'gpt-4.1-mini',
+    maxTokens: 128000,
+    pricing: {
+      input: 0.00015, // $0.00015 per 1K tokens
+      output: 0.0006, // $0.0006 per 1K tokens
     },
   },
   {
