@@ -228,6 +228,14 @@ export function validateLLMConfiguration(): {
   const azureOpenAIClient = new AzureOpenAIClient();
   const geminiClient = new GeminiClient();
   
+  console.log('Azure OpenAI クライアント詳細:');
+  console.log('- endpoint:', azureOpenAIClient.getEndpoint());
+  console.log('- authMethod:', azureOpenAIClient.getAuthMethod());
+  console.log('- isConfigured:', azureOpenAIClient.isConfigured());
+  
+  console.log('Gemini クライアント詳細:');
+  console.log('- isConfigured:', geminiClient.isConfigured());
+  
   const azureOpenAI = azureOpenAIClient.isConfigured();
   const gemini = geminiClient.isConfigured();
   

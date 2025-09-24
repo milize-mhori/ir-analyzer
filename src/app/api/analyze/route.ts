@@ -180,11 +180,20 @@ export async function POST(request: NextRequest) {
 
     // LLM設定の確認
     const config = validateLLMConfiguration();
+    
+    // デバッグ情報を追加
+    console.log('環境変数デバッグ情報:');
+    console.log('AZURE_OPENAI_TARGET_URI:', process.env.AZURE_OPENAI_TARGET_URI);
+    console.log('AZURE_OPENAI_TARGET_KEY:', process.env.AZURE_OPENAI_TARGET_KEY ? '設定済み' : '未設定');
+    console.log('AZURE_OPENAI_API_VERSION:', process.env.AZURE_OPENAI_API_VERSION);
+    console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '設定済み' : '未設定');
+    console.log('LLM設定状況:', config);
+    
     if (!config.hasAnyProvider) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'LLM APIが設定されていません。環境変数を確認してください。' 
+          error: `LLM APIが設定されていません。設定状況: Azure=${config.azureOpenAI}, Gemini=${config.gemini}` 
         } as AnalysisResponse,
         { status: 500 }
       );
