@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { DEFAULT_PROMPTS } from '@/types';
+import { DEFAULT_PROMPTS, Company, CompanyList } from '@/types';
 
 interface CurrentPrompt {
   name: string;
@@ -218,7 +218,7 @@ export const usePrompts = () => {
   }, [currentPrompt.content]);
 
   // 最終的な変数置換プレビュー（実際の企業データで置換）
-  const generateFinalPreview = useCallback((companies: any) => {
+  const generateFinalPreview = useCallback((companies: CompanyList) => {
     if (!companies) return currentPrompt.content;
 
     let replacedPrompt = currentPrompt.content;
@@ -235,7 +235,7 @@ export const usePrompts = () => {
       }
 
       // 比較企業を追加
-      comparisonCompanies.forEach((company: any, index: number) => {
+      comparisonCompanies.forEach((company: Company, index: number) => {
         if (company.name && company.summary) {
           summaryItems.push(`##\n${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}\n##`);
         }
@@ -252,8 +252,8 @@ export const usePrompts = () => {
 
     // 比較企業の置換（一括・新形式）
     const comparisonCompaniesInfo = comparisonCompanies
-      .filter((company: any) => company.name && company.summary)
-      .map((company: any, index: number) => `${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}`)
+      .filter((company: Company) => company.name && company.summary)
+      .map((company: Company, index: number) => `${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}`)
       .join('\n\n');
     
     replacedPrompt = replacedPrompt.replace(
@@ -268,7 +268,7 @@ export const usePrompts = () => {
     );
 
     // 比較企業の置換（個別・旧形式・後方互換性）
-    comparisonCompanies.forEach((company: any, index: number) => {
+    comparisonCompanies.forEach((company: Company, index: number) => {
       const placeholder = `{比較企業${index + 1}}`;
       const replacement = company.name && company.summary ? 
         `${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}` : 
@@ -288,7 +288,7 @@ export const usePrompts = () => {
     replacedPrompt = replacedPrompt.replace(/{base_corp_summary}/g, baseCompany.summary || '（基準企業要約未入力）');
 
     // 新しい変数形式の置換（比較企業名・要約）
-    comparisonCompanies.forEach((company: any, index: number) => {
+    comparisonCompanies.forEach((company: Company, index: number) => {
       const namePattern = new RegExp(`{comp${index + 1}_corp_name}`, 'g');
       const summaryPattern = new RegExp(`{comp${index + 1}_corp_summary}`, 'g');
       
@@ -308,8 +308,8 @@ export const usePrompts = () => {
 
     // 比較企業名一覧の置換
     const comparisonCorpNames = comparisonCompanies
-      .filter((company: any) => company.name)
-      .map((company: any, index: number) => `${String.fromCharCode(66 + index)}:${company.name}`)
+      .filter((company: Company) => company.name)
+      .map((company: Company, index: number) => `${String.fromCharCode(66 + index)}:${company.name}`)
       .join(',');
     replacedPrompt = replacedPrompt.replace(/{comparison_corp_names}/g, comparisonCorpNames || '（比較企業名未入力）');
 

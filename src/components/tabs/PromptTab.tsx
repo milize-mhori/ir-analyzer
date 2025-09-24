@@ -4,21 +4,21 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-import { DEFAULT_PROMPTS } from '@/types';
+import { DEFAULT_PROMPTS, Company } from '@/types';
 import { usePrompts } from '@/hooks/usePrompts';
+import { useCompanies } from '@/hooks/useCompanies';
 
 interface PromptTabProps {
   onExecute?: (prompt: { name: string; content: string }) => void;
   onBack?: () => void;
-  companiesHook?: any; // CompanyListの型を参照
+  companiesHook?: ReturnType<typeof useCompanies>;
 }
 
 export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, companiesHook }) => {
   const { 
     currentPrompt, 
     updateCurrentPrompt, 
-    loadTemplate, 
-    analyzeDynamicVariables,
+    loadTemplate,
     validateVariablesWithCompanies,
     generateDynamicPreview,
     generateFinalPreview
@@ -27,10 +27,10 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
   const [showVariableMapping, setShowVariableMapping] = useState(false);
 
   // 企業データの取得
-  const companies = companiesHook?.companies || { baseCompany: { name: '', summary: '' }, comparisonCompanies: [] };
+  const companies = companiesHook?.companies || { baseCompany: { id: '', name: '', summary: '', type: 'base' as const }, comparisonCompanies: [] };
   const companyCount = {
     base: !!(companies.baseCompany?.name?.trim() && companies.baseCompany?.summary?.trim()),
-    comparison: companies.comparisonCompanies?.filter((c: any) => c.name?.trim() && c.summary?.trim()).length || 0,
+    comparison: companies.comparisonCompanies?.filter((c: Company) => c.name?.trim() && c.summary?.trim()).length || 0,
   };
 
   // 変数の整合性チェック
@@ -306,7 +306,7 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
                   )}
 
                   {/* 比較企業関連 */}
-                  {companies.comparisonCompanies?.map((company: any, index: number) => {
+                  {companies.comparisonCompanies?.map((company: Company, index: number) => {
                     const compNum = index + 1;
                     const relevantVars = uniqueVariables.filter(v => 
                       v.includes(`comp${compNum}_corp`) || v === `{比較企業${compNum}}`

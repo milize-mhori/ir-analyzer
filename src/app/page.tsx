@@ -5,7 +5,6 @@ import { Header } from '@/components/Header';
 import { TabNavigation } from '@/components/TabNavigation';
 import { useTabState } from '@/hooks/useTabState';
 import { DEFAULT_LLM_MODELS } from '@/types';
-import { Card } from '@/components/ui/Card';
 import { SummaryInputTab } from '@/components/tabs/SummaryInputTab';
 import { PromptTab } from '@/components/tabs/PromptTab';
 import { ResultTab } from '@/components/tabs/ResultTab';
