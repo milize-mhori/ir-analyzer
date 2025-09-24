@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { SummaryInputTab } from '@/components/tabs/SummaryInputTab';
 import { PromptTab } from '@/components/tabs/PromptTab';
 import { ResultTab } from '@/components/tabs/ResultTab';
+import { AnalysisLoadingModal } from '@/components/ui/AnalysisLoadingModal';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useLLM } from '@/hooks/useLLM';
 
@@ -21,6 +22,13 @@ export default function Home() {
   
   // LLM実行管理
   const { isLoading, error, result, executeAnalysis, clearResult } = useLLM();
+  
+  // ローディングモーダル用のステート
+  const [currentAnalysisInfo, setCurrentAnalysisInfo] = useState<{
+    companies: typeof companiesHook.companies;
+    prompt: { name: string; content: string };
+    model: typeof DEFAULT_LLM_MODELS[0];
+  } | null>(null);
 
   const renderTabContent = () => {
     switch (currentTab) {
@@ -42,12 +50,22 @@ export default function Home() {
                 return;
               }
 
+              // ローディングモーダル用の情報を設定
+              setCurrentAnalysisInfo({
+                companies: companiesHook.companies,
+                prompt,
+                model: selectedModel,
+              });
+
               // 分析実行
               const result = await executeAnalysis(
                 companiesHook.companies,
                 prompt,
                 selectedModel
               );
+
+              // 分析完了後、ローディングモーダルを閉じる
+              setCurrentAnalysisInfo(null);
 
               // 成功時は結果タブに遷移
               if (result) {
@@ -70,11 +88,21 @@ export default function Home() {
               const selectedModel = DEFAULT_LLM_MODELS.find(m => m.id === selectedModelId);
               if (!selectedModel || !result) return;
 
+              // ローディングモーダル用の情報を設定
+              setCurrentAnalysisInfo({
+                companies: result.companies,
+                prompt: result.prompt,
+                model: selectedModel,
+              });
+
               await executeAnalysis(
                 result.companies,
                 result.prompt,
                 selectedModel
               );
+
+              // 分析完了後、ローディングモーダルを閉じる
+              setCurrentAnalysisInfo(null);
             }}
             onNewAnalysis={() => {
               clearResult();
@@ -123,6 +151,21 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* ローディングモーダル */}
+      {currentAnalysisInfo && (
+        <AnalysisLoadingModal
+          isOpen={isLoading}
+          companies={currentAnalysisInfo.companies}
+          model={currentAnalysisInfo.model}
+          prompt={currentAnalysisInfo.prompt}
+          onCancel={() => {
+            // キャンセル機能は必要に応じて実装
+            console.log('分析をキャンセルしました');
+            setCurrentAnalysisInfo(null);
+          }}
+        />
+      )}
     </div>
   );
 }

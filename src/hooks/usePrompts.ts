@@ -217,6 +217,105 @@ export const usePrompts = () => {
     return previewContent;
   }, [currentPrompt.content]);
 
+  // 最終的な変数置換プレビュー（実際の企業データで置換）
+  const generateFinalPreview = useCallback((companies: any) => {
+    if (!companies) return currentPrompt.content;
+
+    let replacedPrompt = currentPrompt.content;
+    const baseCompany = companies.baseCompany || { name: '', summary: '' };
+    const comparisonCompanies = companies.comparisonCompanies || [];
+
+    // summary_listの動的生成
+    const generateSummaryList = () => {
+      const summaryItems: string[] = [];
+
+      // 基準企業を追加
+      if (baseCompany.name && baseCompany.summary) {
+        summaryItems.push(`##\nA:${baseCompany.name}\n${baseCompany.summary}\n##`);
+      }
+
+      // 比較企業を追加
+      comparisonCompanies.forEach((company: any, index: number) => {
+        if (company.name && company.summary) {
+          summaryItems.push(`##\n${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}\n##`);
+        }
+      });
+
+      return summaryItems.join('\n');
+    };
+
+    // 基準企業の置換（新形式）
+    replacedPrompt = replacedPrompt.replace(
+      /{baseCompany}/g,
+      baseCompany.name && baseCompany.summary ? `A:${baseCompany.name}\n${baseCompany.summary}` : '（基準企業未入力）'
+    );
+
+    // 比較企業の置換（一括・新形式）
+    const comparisonCompaniesInfo = comparisonCompanies
+      .filter((company: any) => company.name && company.summary)
+      .map((company: any, index: number) => `${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}`)
+      .join('\n\n');
+    
+    replacedPrompt = replacedPrompt.replace(
+      /{comparisonCompanies}/g,
+      comparisonCompaniesInfo || '（比較企業未入力）'
+    );
+
+    // 基準企業の置換（旧形式・後方互換性）
+    replacedPrompt = replacedPrompt.replace(
+      /{基準企業}/g,
+      baseCompany.name && baseCompany.summary ? `A:${baseCompany.name}\n${baseCompany.summary}` : '（基準企業未入力）'
+    );
+
+    // 比較企業の置換（個別・旧形式・後方互換性）
+    comparisonCompanies.forEach((company: any, index: number) => {
+      const placeholder = `{比較企業${index + 1}}`;
+      const replacement = company.name && company.summary ? 
+        `${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}` : 
+        `（比較企業${index + 1}未入力）`;
+      replacedPrompt = replacedPrompt.replace(new RegExp(placeholder, 'g'), replacement);
+    });
+
+    // 空の比較企業プレースホルダーを削除
+    for (let i = comparisonCompanies.length + 1; i <= 4; i++) {
+      replacedPrompt = replacedPrompt.replace(new RegExp(`{比較企業${i}}`, 'g'), '');
+    }
+
+    // 新しい変数形式の置換（企業名のみ）
+    replacedPrompt = replacedPrompt.replace(/{base_corp_name}/g, baseCompany.name ? `A:${baseCompany.name}` : '（基準企業名未入力）');
+    
+    // 新しい変数形式の置換（基準企業要約）
+    replacedPrompt = replacedPrompt.replace(/{base_corp_summary}/g, baseCompany.summary || '（基準企業要約未入力）');
+
+    // 新しい変数形式の置換（比較企業名・要約）
+    comparisonCompanies.forEach((company: any, index: number) => {
+      const namePattern = new RegExp(`{comp${index + 1}_corp_name}`, 'g');
+      const summaryPattern = new RegExp(`{comp${index + 1}_corp_summary}`, 'g');
+      
+      replacedPrompt = replacedPrompt.replace(namePattern, company.name ? `${String.fromCharCode(66 + index)}:${company.name}` : `（比較企業${index + 1}名未入力）`);
+      replacedPrompt = replacedPrompt.replace(summaryPattern, company.summary || `（比較企業${index + 1}要約未入力）`);
+    });
+
+    // 空の比較企業プレースホルダーを削除（新形式）
+    for (let i = comparisonCompanies.length + 1; i <= 4; i++) {
+      replacedPrompt = replacedPrompt.replace(new RegExp(`{comp${i}_corp_name}`, 'g'), '');
+      replacedPrompt = replacedPrompt.replace(new RegExp(`{comp${i}_corp_summary}`, 'g'), '');
+    }
+
+    // 統合変数の置換（summary_list）
+    const summaryListContent = generateSummaryList();
+    replacedPrompt = replacedPrompt.replace(/{summary_list}/g, summaryListContent);
+
+    // 比較企業名一覧の置換
+    const comparisonCorpNames = comparisonCompanies
+      .filter((company: any) => company.name)
+      .map((company: any, index: number) => `${String.fromCharCode(66 + index)}:${company.name}`)
+      .join(',');
+    replacedPrompt = replacedPrompt.replace(/{comparison_corp_names}/g, comparisonCorpNames || '（比較企業名未入力）');
+
+    return replacedPrompt;
+  }, [currentPrompt.content]);
+
   return {
     currentPrompt,
     updateCurrentPrompt,
@@ -227,5 +326,6 @@ export const usePrompts = () => {
     getPromptStats,
     validateVariablesWithCompanies,
     generateDynamicPreview,
+    generateFinalPreview,
   };
 };

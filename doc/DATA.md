@@ -362,8 +362,8 @@ const DEFAULT_LLM_MODELS: LLMModel[] = [
 // 使用可能なプロンプト変数形式
 const PROMPT_VARIABLES = {
   // 新形式（推奨）
-  baseCompany: '{baseCompany}',               // 基準企業の情報（企業名 + 要約）
-  comparisonCompanies: '{comparisonCompanies}', // 比較企業の情報（全企業の名前 + 要約）
+  baseCompany: '{baseCompany}',               // 基準企業の情報（A:企業名 + 要約）
+  comparisonCompanies: '{comparisonCompanies}', // 比較企業の情報（B:企業名 ～ E:企業名 + 要約）
   
   // 詳細形式
   base_corp_name: '{base_corp_name}',         // 基準企業名のみ
@@ -377,11 +377,11 @@ const PROMPT_VARIABLES = {
   comparison_corp_names: '{comparison_corp_names}', // 比較企業名をカンマ区切りで列挙
   
   // 旧形式（後方互換性のため保持）
-  基準企業: '{基準企業}',                     // 基準企業の情報
-  比較企業1: '{比較企業1}',                   // 比較企業1の情報
-  比較企業2: '{比較企業2}',                   // 比較企業2の情報
-  比較企業3: '{比較企業3}',                   // 比較企業3の情報
-  比較企業4: '{比較企業4}',                   // 比較企業4の情報
+  基準企業: '{基準企業}',                     // 基準企業の情報（A:企業名 + 要約）
+  比較企業1: '{比較企業1}',                   // 比較企業1の情報（B:企業名 + 要約）
+  比較企業2: '{比較企業2}',                   // 比較企業2の情報（C:企業名 + 要約）
+  比較企業3: '{比較企業3}',                   // 比較企業3の情報（D:企業名 + 要約）
+  比較企業4: '{比較企業4}',                   // 比較企業4の情報（E:企業名 + 要約）
 } as const;
 ```
 

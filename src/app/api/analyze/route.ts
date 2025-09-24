@@ -18,11 +18,11 @@ function generateSummaryList(companies: AnalysisRequest['companies']): string {
   const summaryItems: string[] = [];
 
   // 基準企業を追加
-  summaryItems.push(`##\n${companies.baseCompany.name}\n${companies.baseCompany.summary}\n##`);
+  summaryItems.push(`##\nA:${companies.baseCompany.name}\n${companies.baseCompany.summary}\n##`);
 
   // 比較企業を追加
-  companies.comparisonCompanies.forEach((company) => {
-    summaryItems.push(`##\n${company.name}\n${company.summary}\n##`);
+  companies.comparisonCompanies.forEach((company, index) => {
+    summaryItems.push(`##\n${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}\n##`);
   });
 
   return summaryItems.join('\n');
@@ -35,12 +35,12 @@ function replacePromptVariables(prompt: string, companies: AnalysisRequest['comp
   // 基準企業の置換（新形式）
   replacedPrompt = replacedPrompt.replace(
     /{baseCompany}/g,
-    `【${companies.baseCompany.name}】\n${companies.baseCompany.summary}`
+    `A:${companies.baseCompany.name}\n${companies.baseCompany.summary}`
   );
 
   // 比較企業の置換（一括・新形式）
   const comparisonCompaniesInfo = companies.comparisonCompanies
-    .map(company => `【${company.name}】\n${company.summary}`)
+    .map((company, index) => `${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}`)
     .join('\n\n');
   
   replacedPrompt = replacedPrompt.replace(
@@ -51,13 +51,13 @@ function replacePromptVariables(prompt: string, companies: AnalysisRequest['comp
   // 基準企業の置換（旧形式・後方互換性）
   replacedPrompt = replacedPrompt.replace(
     /{基準企業}/g,
-    `【${companies.baseCompany.name}】\n${companies.baseCompany.summary}`
+    `A:${companies.baseCompany.name}\n${companies.baseCompany.summary}`
   );
 
   // 比較企業の置換（個別・旧形式・後方互換性）
   companies.comparisonCompanies.forEach((company, index) => {
     const placeholder = `{比較企業${index + 1}}`;
-    const replacement = `【${company.name}】\n${company.summary}`;
+    const replacement = `${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}`;
     replacedPrompt = replacedPrompt.replace(new RegExp(placeholder, 'g'), replacement);
   });
 
@@ -67,7 +67,7 @@ function replacePromptVariables(prompt: string, companies: AnalysisRequest['comp
   }
 
   // 新しい変数形式の置換（企業名のみ）
-  replacedPrompt = replacedPrompt.replace(/{base_corp_name}/g, companies.baseCompany.name);
+  replacedPrompt = replacedPrompt.replace(/{base_corp_name}/g, `A:${companies.baseCompany.name}`);
   
   // 新しい変数形式の置換（基準企業要約）
   replacedPrompt = replacedPrompt.replace(/{base_corp_summary}/g, companies.baseCompany.summary);
@@ -77,7 +77,7 @@ function replacePromptVariables(prompt: string, companies: AnalysisRequest['comp
     const namePattern = new RegExp(`{comp${index + 1}_corp_name}`, 'g');
     const summaryPattern = new RegExp(`{comp${index + 1}_corp_summary}`, 'g');
     
-    replacedPrompt = replacedPrompt.replace(namePattern, company.name);
+    replacedPrompt = replacedPrompt.replace(namePattern, `${String.fromCharCode(66 + index)}:${company.name}`);
     replacedPrompt = replacedPrompt.replace(summaryPattern, company.summary);
   });
 
@@ -92,7 +92,9 @@ function replacePromptVariables(prompt: string, companies: AnalysisRequest['comp
   replacedPrompt = replacedPrompt.replace(/{summary_list}/g, summaryListContent);
 
   // 比較企業名一覧の置換
-  const comparisonCorpNames = companies.comparisonCompanies.map(company => company.name).join(',');
+  const comparisonCorpNames = companies.comparisonCompanies
+    .map((company, index) => `${String.fromCharCode(66 + index)}:${company.name}`)
+    .join(',');
   replacedPrompt = replacedPrompt.replace(/{comparison_corp_names}/g, comparisonCorpNames);
 
   return replacedPrompt;

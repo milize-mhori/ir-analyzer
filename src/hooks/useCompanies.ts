@@ -64,19 +64,19 @@ export const useCompanies = () => {
 
     // 基準企業のバリデーション
     if (!companies.baseCompany.name.trim()) {
-      errors.push('基準企業の企業名は必須です');
+      errors.push('基準企業の企業名（1行目）は必須です');
     }
     if (!companies.baseCompany.summary.trim()) {
-      errors.push('基準企業のIR要約は必須です');
+      errors.push('基準企業のIR要約（2行目以降）は必須です');
     }
 
     // 比較企業のバリデーション
     companies.comparisonCompanies.forEach((company, index) => {
       if (!company.name.trim()) {
-        errors.push(`比較企業${index + 1}の企業名は必須です`);
+        errors.push(`比較企業${index + 1}の企業名（1行目）は必須です`);
       }
       if (!company.summary.trim()) {
-        errors.push(`比較企業${index + 1}のIR要約は必須です`);
+        errors.push(`比較企業${index + 1}のIR要約（2行目以降）は必須です`);
       }
     });
 

@@ -150,10 +150,11 @@ export const SummaryInputTab: React.FC<SummaryInputTabProps> = ({ onNext, compan
       <Card className="bg-gray-50 border-gray-200">
         <h4 className="font-medium text-gray-900 mb-2">💡 入力のコツ</h4>
         <ul className="text-sm text-gray-700 space-y-1">
+          <li>• <strong>入力形式</strong>：1行目に企業名、2行目以降にIR要約を記載してください</li>
           <li>• <strong>基準企業</strong>：分析の中心となる企業を選んでください</li>
           <li>• <strong>比較企業</strong>：同業界や競合企業を1-4社まで入力可能です</li>
           <li>• <strong>IR要約</strong>：決算資料、説明会資料、有価証券報告書の要約を記載</li>
-          <li>• <strong>推奨文字数</strong>：1企業あたり500-1000文字程度</li>
+          <li>• <strong>推奨文字数</strong>：IR要約は1企業あたり500-1000文字程度</li>
         </ul>
       </Card>
     </div>

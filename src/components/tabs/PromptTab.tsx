@@ -20,7 +20,8 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
     loadTemplate, 
     analyzeDynamicVariables,
     validateVariablesWithCompanies,
-    generateDynamicPreview
+    generateDynamicPreview,
+    generateFinalPreview
   } = usePrompts();
   const [showVariableHelp, setShowVariableHelp] = useState(false);
   const [showVariableMapping, setShowVariableMapping] = useState(false);
@@ -37,6 +38,9 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
 
   // 動的展開プレビュー
   const dynamicPreview = generateDynamicPreview(companyCount);
+  
+  // 最終プレビュー（変数置換後）
+  const finalPreview = generateFinalPreview(companies);
 
   // テンプレート選択肢
   const templateOptions = [
@@ -294,7 +298,7 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
                         {uniqueVariables.includes('{baseCompany}') && (
                           <div className="flex items-start gap-3">
                             <code className="bg-blue-100 px-2 py-1 rounded text-xs">{'{baseCompany}'}</code>
-                            <span className="text-blue-800">→ 【{companies.baseCompany?.name || '（未入力）'}】<br/>   {companies.baseCompany?.summary ? `${companies.baseCompany.summary.substring(0, 50)}...` : '（未入力）'}</span>
+                            <span className="text-blue-800">→ A:{companies.baseCompany?.name || '（未入力）'}<br/>   {companies.baseCompany?.summary ? `${companies.baseCompany.summary.substring(0, 50)}...` : '（未入力）'}</span>
                           </div>
                         )}
                       </div>
@@ -329,7 +333,7 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
                           {uniqueVariables.includes(`{比較企業${compNum}}`) && (
                             <div className="flex items-start gap-3">
                               <code className="bg-green-100 px-2 py-1 rounded text-xs">{`{比較企業${compNum}}`}</code>
-                              <span className="text-green-800">→ 【{company?.name || '（未入力）'}】<br/>   {company?.summary ? `${company.summary.substring(0, 50)}...` : '（未入力）'}</span>
+                              <span className="text-green-800">→ {String.fromCharCode(65 + compNum)}:{company?.name || '（未入力）'}<br/>   {company?.summary ? `${company.summary.substring(0, 50)}...` : '（未入力）'}</span>
                             </div>
                           )}
                         </div>
@@ -349,15 +353,30 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-lg font-medium text-gray-900">👀 プロンプトプレビュー</h3>
-              <p className="text-sm text-gray-600">入力された企業数に合わせて動的展開されたプロンプト</p>
+              <p className="text-sm text-gray-600">実際の企業データで変数置換後のプロンプトと、段階的な展開過程</p>
             </div>
           </div>
 
           <div className="space-y-4">
+            {/* 最終プレビュー（変数置換後） */}
+            {finalPreview !== currentPrompt.content && (
+              <div>
+                <h4 className="font-medium text-green-900 mb-2">✅ 最終プレビュー（変数置換後）</h4>
+                <div className="bg-green-50 p-4 rounded-md border max-h-80 overflow-y-auto">
+                  <pre className="text-sm text-green-800 whitespace-pre-wrap font-mono">
+                    {finalPreview}
+                  </pre>
+                </div>
+                <div className="mt-2 text-xs text-green-600">
+                  🚀 この内容がLLMに送信されます（実際の企業データで変数が置換済み）
+                </div>
+              </div>
+            )}
+
             {/* 動的展開プレビュー */}
             {dynamicPreview !== currentPrompt.content && (
               <>
-                <div>
+                <div className="border-t pt-4">
                   <h4 className="font-medium text-purple-900 mb-2">🚀 動的展開後（変数置換前）</h4>
                   <div className="bg-purple-50 p-4 rounded-md border max-h-60 overflow-y-auto">
                     <pre className="text-sm text-purple-800 whitespace-pre-wrap font-mono">
@@ -381,7 +400,7 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
             )}
 
             {/* 通常のプレビュー（動的展開が無い場合） */}
-            {dynamicPreview === currentPrompt.content && (
+            {dynamicPreview === currentPrompt.content && finalPreview === currentPrompt.content && (
               <div>
                 <h4 className="font-medium text-gray-700 mb-2">📝 プロンプト内容（変数は実行時に置換されます）</h4>
                 <div className="bg-gray-50 p-4 rounded-md border max-h-60 overflow-y-auto">
@@ -390,6 +409,32 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
                   </pre>
                 </div>
               </div>
+            )}
+
+            {/* 変数が置換されたが動的展開はない場合 */}
+            {dynamicPreview === currentPrompt.content && finalPreview !== currentPrompt.content && (
+              <>
+                <div>
+                  <h4 className="font-medium text-green-900 mb-2">✅ 最終プレビュー（変数置換後）</h4>
+                  <div className="bg-green-50 p-4 rounded-md border max-h-80 overflow-y-auto">
+                    <pre className="text-sm text-green-800 whitespace-pre-wrap font-mono">
+                      {finalPreview}
+                    </pre>
+                  </div>
+                  <div className="mt-2 text-xs text-green-600">
+                    🚀 この内容がLLMに送信されます（実際の企業データで変数が置換済み）
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <h4 className="font-medium text-gray-700 mb-2">📝 元のテンプレート</h4>
+                  <div className="bg-gray-50 p-4 rounded-md border max-h-40 overflow-y-auto">
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
+                      {currentPrompt.content}
+                    </pre>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </Card>
