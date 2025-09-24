@@ -3,6 +3,10 @@ frontend:
   phases:
     preBuild:
       commands:
+        # 環境変数の確認（デバッグ用）
+        - echo "AZURE_OPENAI_TARGET_URI=$AZURE_OPENAI_TARGET_URI"
+        - echo "AZURE_OPENAI_TARGET_KEY=$AZURE_OPENAI_TARGET_KEY"
+        - echo "GEMINI_API_KEY=$GEMINI_API_KEY"
         - npm ci
     build:
       commands:
