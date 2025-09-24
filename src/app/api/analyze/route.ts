@@ -280,10 +280,38 @@ export async function POST(request: NextRequest) {
 // GET /api/analyze - 設定状況確認用
 export async function GET() {
   try {
+    // 環境変数の直接確認
+    const envVars = {
+      AZURE_OPENAI_TARGET_URI: process.env.AZURE_OPENAI_TARGET_URI || 'undefined',
+      AZURE_OPENAI_TARGET_KEY: process.env.AZURE_OPENAI_TARGET_KEY ? '設定済み' : 'undefined',
+      AZURE_OPENAI_API_VERSION: process.env.AZURE_OPENAI_API_VERSION || 'undefined',
+      AZURE_OPENAI_GPT4O_DEPLOYMENT: process.env.AZURE_OPENAI_GPT4O_DEPLOYMENT || 'undefined',
+      AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT: process.env.AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT || 'undefined',
+      AZURE_OPENAI_GPT41_MINI_DEPLOYMENT: process.env.AZURE_OPENAI_GPT41_MINI_DEPLOYMENT || 'undefined',
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY ? '設定済み' : 'undefined'
+    };
+    
+    // クライアントの設定状況確認
+    const azureOpenAIClient = new AzureOpenAIClient();
+    const geminiClient = new GeminiClient();
+    
+    const clientDetails = {
+      azureOpenAI: {
+        endpoint: azureOpenAIClient.getEndpoint(),
+        authMethod: azureOpenAIClient.getAuthMethod(),
+        isConfigured: azureOpenAIClient.isConfigured()
+      },
+      gemini: {
+        isConfigured: geminiClient.isConfigured()
+      }
+    };
+    
     const config = validateLLMConfiguration();
     
     return NextResponse.json({
       status: 'ok',
+      environmentVariables: envVars,
+      clientDetails: clientDetails,
       providers: {
         'azure-openai': config.azureOpenAI,
         'gemini': config.gemini,
@@ -297,7 +325,10 @@ export async function GET() {
   } catch (error) {
     console.error('設定確認エラー:', error);
     return NextResponse.json(
-      { error: '設定確認中にエラーが発生しました' },
+      { 
+        error: '設定確認中にエラーが発生しました',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
