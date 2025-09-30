@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-import { DEFAULT_PROMPTS, Company } from '@/types';
+import { Company } from '@/types';
 import { usePrompts } from '@/hooks/usePrompts';
 import { useCompanies } from '@/hooks/useCompanies';
 
@@ -17,8 +17,11 @@ interface PromptTabProps {
 export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, companiesHook }) => {
   const { 
     currentPrompt, 
+    availablePrompts,
+    isLoading,
     updateCurrentPrompt, 
     loadTemplate,
+    loadAvailablePrompts,
     validateVariablesWithCompanies,
     generateDynamicPreview,
     generateFinalPreview
@@ -45,18 +48,18 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
   // テンプレート選択肢
   const templateOptions = [
     { value: '', label: 'カスタムプロンプト' },
-    ...DEFAULT_PROMPTS.map(prompt => ({
+    ...availablePrompts.map(prompt => ({
       value: prompt.id,
       label: prompt.name,
     })),
   ];
 
-  // デフォルトで要約比較v1が選択されている場合の値
+  // 現在選択されているテンプレートの値を取得
   const getSelectedTemplateValue = () => {
-    if (currentPrompt.name === '要約比較v1') {
-      return 'summary-comparison-v1';
-    }
-    return '';
+    const selectedPrompt = availablePrompts.find(prompt => 
+      prompt.name === currentPrompt.name && prompt.content === currentPrompt.content
+    );
+    return selectedPrompt ? selectedPrompt.id : '';
   };
 
   const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -107,14 +110,48 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
     <div className="space-y-6">
       {/* プロンプトテンプレート選択 */}
       <Card title="📝 プロンプトテンプレート" subtitle="事前定義されたテンプレートまたはカスタムプロンプトを選択">
-        <Select
-          label="テンプレート選択"
-          options={templateOptions}
-          value={getSelectedTemplateValue()}
-          onChange={handleTemplateChange}
-          placeholder="プロンプトテンプレートを選択"
-          helperText="テンプレートを選択すると自動でプロンプト内容が入力されます"
-        />
+        <div className="space-y-4">
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Select
+                label="テンプレート選択"
+                options={templateOptions}
+                value={getSelectedTemplateValue()}
+                onChange={handleTemplateChange}
+                placeholder="プロンプトテンプレートを選択"
+                helperText="テンプレートを選択すると自動でプロンプト内容が入力されます"
+                disabled={isLoading}
+              />
+            </div>
+            <Button
+              variant="secondary"
+              onClick={loadAvailablePrompts}
+              disabled={isLoading}
+              className="text-sm"
+            >
+              {isLoading ? '読み込み中...' : '🔄 再読み込み'}
+            </Button>
+          </div>
+          
+          {isLoading && (
+            <div className="text-sm text-gray-600 flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              プロンプトファイルを読み込み中...
+            </div>
+          )}
+          
+          {!isLoading && availablePrompts.length > 0 && (
+            <div className="text-sm text-green-600">
+              ✅ {availablePrompts.length}個のプロンプトファイルが読み込まれました
+            </div>
+          )}
+          
+          {!isLoading && availablePrompts.length === 0 && (
+            <div className="text-sm text-amber-600">
+              ⚠️ プロンプトファイルが見つかりません。prompts/templates/フォルダにMarkdownファイルを追加してください。
+            </div>
+          )}
+        </div>
       </Card>
 
       {/* プロンプト基本情報 */}
@@ -475,13 +512,23 @@ export const PromptTab: React.FC<PromptTabProps> = ({ onExecute, onBack, compani
 
       {/* ヘルプ情報 */}
       <Card className="bg-gray-50 border-gray-200">
-        <h4 className="font-medium text-gray-900 mb-2">💡 プロンプト作成のコツ</h4>
+        <h4 className="font-medium text-gray-900 mb-2">💡 プロンプト管理のコツ</h4>
         <ul className="text-sm text-gray-700 space-y-1">
+          <li>• <strong>ファイル管理</strong>：<code>prompts/templates/</code>フォルダにMarkdownファイルを追加すると自動で読み込まれます</li>
           <li>• <strong>統合変数を活用</strong>：{'{summary_list}'}を使用すると入力企業数に自動対応</li>
           <li>• <strong>具体的な指示</strong>：「比較してください」より「以下の5つの観点で比較してください」</li>
           <li>• <strong>出力形式の指定</strong>：表形式、箇条書きなど希望する形式を指定</li>
           <li>• <strong>文脈の提供</strong>：分析の目的や背景を明記するとより良い結果が得られます</li>
         </ul>
+        <div className="mt-3 p-3 bg-blue-50 rounded-md">
+          <h5 className="font-medium text-blue-900 mb-1">📁 新しいプロンプトファイルの作成方法</h5>
+          <div className="text-xs text-blue-800">
+            1. <code>prompts/templates/</code>フォルダに<code>.md</code>ファイルを作成<br/>
+            2. Front matterでメタデータを定義（id、name、description等）<br/>
+            3. プロンプト内容をMarkdown形式で記述<br/>
+            4. 「🔄 再読み込み」ボタンで新しいファイルを読み込み
+          </div>
+        </div>
       </Card>
     </div>
   );

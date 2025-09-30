@@ -1,8 +1,16 @@
+// 要約セクションの型定義
+export interface SummarySection {
+  id: string;          // セクションID
+  importantPoint: string; // 重要ポイント（例：経営成績、財政状態）
+  text: string;        // 要約テキスト
+}
+
 // 企業データの型定義
 export interface Company {
   id: string;          // 一意識別子
   name: string;        // 企業名
-  summary: string;     // IR要約テキスト
+  summary: string;     // IR要約テキスト（後方互換性のため残す）
+  summarySections?: SummarySection[]; // 新しい要約セクション形式
   type: 'base' | 'comparison'; // 基準企業 or 比較企業
 }
 
@@ -186,75 +194,8 @@ export interface AnalysisResponse {
   error?: string;      // エラーメッセージ
 }
 
-// デフォルトプロンプトテンプレート
-export const DEFAULT_PROMPTS: Prompt[] = [
-  {
-    id: 'default-comparison',
-    name: '基本比較分析',
-    content: `以下の企業のIR情報を比較分析してください：
-
-基準企業: {baseCompany}
-
-比較企業:
-{comparisonCompanies}
-
-以下の観点で比較分析を行い、共通点と差異を明確にしてください：
-1. 事業戦略・方向性
-2. 財務状況・業績
-3. 市場環境認識
-4. 今後の課題・リスク
-5. 投資家への訴求ポイント`,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: 'swot-analysis',
-    name: 'SWOT分析',
-    content: `{baseCompany}と以下の比較企業のSWOT分析を行ってください：
-
-比較企業:
-{comparisonCompanies}
-
-各企業について以下の4つの観点で分析し、最後に業界内での位置づけを比較してください：
-- Strengths (強み)
-- Weaknesses (弱み) 
-- Opportunities (機会)
-- Threats (脅威)`,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: 'summary-comparison-v1',
-    name: '要約比較v1',
-    content: `# 命令:
-注力事業ついて、まとめてください。
-
-# 制約条件:
-・具体的な取り組みがあれば含める
-・先進的な取り組み、独自の取り組みがあれば含める
-・多様な側面から関連する取り組みを網羅する
-・目標値や達成値を数字で表現している記載があれば含める
-
-{summary_list}
-
-# 要約指示
-基準企業：{base_corp_name}
-比較企業：{comparison_corp_names}
-
-注力事業について、以下の観点のレポートを作成してください
-1.基準企業と比較企業（少なくとも一社）とで共通する取り組み
-2.基準企業と比較企業（少なくとも一社）で特徴的な差異を表す取り組み
-3.基準企業を除いた比較企業間のみで共通する取り組み
-4.全体のまとめ
-
-# 制約条件:
-・2000文字程度でまとめる
-・記載内容には、実際の取り組み内容や見通しなどを含めて、具体性を持たせる
-・各企業の各文末には参照元のページ数が記載されているので、要約の参照元を企業を表す英字：ページ数の形式で要約の末尾に付加する（例　A:12, B:10）`,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }
-];
+// 注意：プロンプトテンプレートは prompts/templates/ フォルダのMarkdownファイルで管理されています
+// 新しいプロンプトを追加する場合は、そのフォルダにMarkdownファイルを作成してください
 
 // デフォルトLLMモデル設定
 export const DEFAULT_LLM_MODELS: LLMModel[] = [

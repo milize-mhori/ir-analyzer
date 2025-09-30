@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { DEFAULT_PROMPTS, Company, CompanyList } from '@/types';
+import { useState, useCallback, useEffect } from 'react';
+import { Prompt, Company, CompanyList } from '@/types';
 
 interface CurrentPrompt {
   name: string;
@@ -7,33 +7,11 @@ interface CurrentPrompt {
 }
 
 export const usePrompts = () => {
+  const [availablePrompts, setAvailablePrompts] = useState<Prompt[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPrompt, setCurrentPrompt] = useState<CurrentPrompt>({
-    name: '要約比較v1',
-    content: `# 命令:
-注力事業ついて、まとめてください。
-
-# 制約条件:
-・具体的な取り組みがあれば含める
-・先進的な取り組み、独自の取り組みがあれば含める
-・多様な側面から関連する取り組みを網羅する
-・目標値や達成値を数字で表現している記載があれば含める
-
-{summary_list}
-
-# 要約指示
-基準企業：{base_corp_name}
-比較企業：{comparison_corp_names}
-
-注力事業について、以下の観点のレポートを作成してください
-1.基準企業と比較企業（少なくとも一社）とで共通する取り組み
-2.基準企業と比較企業（少なくとも一社）で特徴的な差異を表す取り組み
-3.基準企業を除いた比較企業間のみで共通する取り組み
-4.全体のまとめ
-
-# 制約条件:
-・2000文字程度でまとめる
-・記載内容には、実際の取り組み内容や見通しなどを含めて、具体性を持たせる
-・各企業の各文末には参照元のページ数が記載されているので、要約の参照元を企業を表す英字：ページ数の形式で要約の末尾に付加する（例　A:12, B:10）`,
+    name: '',
+    content: '',
   });
 
   // 現在のプロンプトを更新
@@ -41,16 +19,48 @@ export const usePrompts = () => {
     setCurrentPrompt(prompt);
   }, []);
 
+  // プロンプト一覧を読み込み
+  const loadAvailablePrompts = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/prompts');
+      if (response.ok) {
+        const prompts = await response.json();
+        setAvailablePrompts(prompts);
+        
+        // デフォルトで最初のプロンプトを選択（有価証券報告書v1があれば優先）
+        const defaultPrompt = prompts.find((p: Prompt) => p.id === 'securities-report-v1') || prompts[0];
+        if (defaultPrompt) {
+          setCurrentPrompt({
+            name: defaultPrompt.name,
+            content: defaultPrompt.content,
+          });
+        }
+      } else {
+        console.error('Failed to load prompts');
+      }
+    } catch (error) {
+      console.error('Error loading prompts:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // コンポーネントマウント時にプロンプト一覧を読み込み
+  useEffect(() => {
+    loadAvailablePrompts();
+  }, [loadAvailablePrompts]);
+
   // テンプレートを読み込み
   const loadTemplate = useCallback((templateId: string) => {
-    const template = DEFAULT_PROMPTS.find(prompt => prompt.id === templateId);
+    const template = availablePrompts.find(prompt => prompt.id === templateId);
     if (template) {
       setCurrentPrompt({
         name: template.name,
         content: template.content,
       });
     }
-  }, []);
+  }, [availablePrompts]);
 
   // プロンプトをリセット
   const resetPrompt = useCallback(() => {
@@ -230,14 +240,41 @@ export const usePrompts = () => {
       const summaryItems: string[] = [];
 
       // 基準企業を追加
-      if (baseCompany.name && baseCompany.summary) {
-        summaryItems.push(`##\nA:${baseCompany.name}\n${baseCompany.summary}\n##`);
+      if (baseCompany.name) {
+        if (baseCompany.summarySections && baseCompany.summarySections.length > 0) {
+          // 新しい要約セクション形式
+          summaryItems.push(`##\nA:${baseCompany.name}`);
+          baseCompany.summarySections.forEach((section, sectionIndex) => {
+            summaryItems.push(`### Content of summary A:${sectionIndex + 1}`);
+            summaryItems.push(`[important_point] ${section.importantPoint}`);
+            summaryItems.push(`[text]`);
+            summaryItems.push(section.text);
+          });
+          summaryItems.push(`##`);
+        } else if (baseCompany.summary) {
+          // 従来の要約形式（後方互換性）
+          summaryItems.push(`##\nA:${baseCompany.name}\n${baseCompany.summary}\n##`);
+        }
       }
 
       // 比較企業を追加
       comparisonCompanies.forEach((company: Company, index: number) => {
-        if (company.name && company.summary) {
-          summaryItems.push(`##\n${String.fromCharCode(66 + index)}:${company.name}\n${company.summary}\n##`);
+        if (company.name) {
+          const companyLetter = String.fromCharCode(66 + index);
+          if (company.summarySections && company.summarySections.length > 0) {
+            // 新しい要約セクション形式
+            summaryItems.push(`##\n${companyLetter}:${company.name}`);
+            company.summarySections.forEach((section, sectionIndex) => {
+              summaryItems.push(`### Content of summary ${companyLetter}:${sectionIndex + 1}`);
+              summaryItems.push(`[important_point] ${section.importantPoint}`);
+              summaryItems.push(`[text]`);
+              summaryItems.push(section.text);
+            });
+            summaryItems.push(`##`);
+          } else if (company.summary) {
+            // 従来の要約形式（後方互換性）
+            summaryItems.push(`##\n${companyLetter}:${company.name}\n${company.summary}\n##`);
+          }
         }
       });
 
@@ -318,8 +355,11 @@ export const usePrompts = () => {
 
   return {
     currentPrompt,
+    availablePrompts,
+    isLoading,
     updateCurrentPrompt,
     loadTemplate,
+    loadAvailablePrompts,
     resetPrompt,
     validatePrompt,
     analyzeDynamicVariables,
