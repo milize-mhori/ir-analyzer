@@ -9,6 +9,7 @@ import { SummaryInputTab } from '@/components/tabs/SummaryInputTab';
 import { PromptTab } from '@/components/tabs/PromptTab';
 import { ResultTab } from '@/components/tabs/ResultTab';
 import { AnalysisLoadingModal } from '@/components/ui/AnalysisLoadingModal';
+import { ComparisonResultModal } from '@/components/ui/ComparisonResultModal';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useLLM } from '@/hooks/useLLM';
 
@@ -28,6 +29,39 @@ export default function Home() {
     prompt: { name: string; content: string };
     model: typeof DEFAULT_LLM_MODELS[0];
   } | null>(null);
+
+  // 比較結果モーダル用のステート
+  const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
+
+  // 分析結果のJSONをパースして比較結果データに変換
+  const parseComparisonResult = (resultText: string | null) => {
+    if (!resultText) return null;
+    
+    try {
+      // JSONブロックを抽出（```json ... ``` または { ... } の形式に対応）
+      let jsonText = resultText.trim();
+      
+      // マークダウンのコードブロックを除去
+      const jsonBlockMatch = jsonText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+      if (jsonBlockMatch) {
+        jsonText = jsonBlockMatch[1];
+      }
+      
+      // JSONをパース
+      const parsed = JSON.parse(jsonText);
+      
+      // 期待される形式（sections配列を持つ）かチェック
+      if (parsed.sections && Array.isArray(parsed.sections)) {
+        return parsed;
+      }
+      
+      console.warn('パースされたJSONが期待される形式ではありません:', parsed);
+      return null;
+    } catch (error) {
+      console.error('分析結果のJSONパースに失敗しました:', error);
+      return null;
+    }
+  };
 
   const renderTabContent = () => {
     switch (currentTab) {
@@ -107,6 +141,7 @@ export default function Home() {
               clearResult();
               switchTab('summary');
             }}
+            onNewsADClick={() => setIsComparisonModalOpen(true)}
           />
         );
       
@@ -165,6 +200,14 @@ export default function Home() {
           }}
         />
       )}
+
+      {/* 比較結果モーダル */}
+      <ComparisonResultModal
+        isOpen={isComparisonModalOpen}
+        onClose={() => setIsComparisonModalOpen(false)}
+        companies={[companiesHook.companies.baseCompany, ...companiesHook.companies.comparisonCompanies]}
+        data={parseComparisonResult(result?.result || null)}
+      />
     </div>
   );
 }

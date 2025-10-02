@@ -12,6 +12,7 @@ interface ResultTabProps {
   onBack?: () => void;
   onReExecute?: () => void;
   onNewAnalysis?: () => void;
+  onNewsADClick?: () => void;
 }
 
 export const ResultTab: React.FC<ResultTabProps> = ({
@@ -21,6 +22,7 @@ export const ResultTab: React.FC<ResultTabProps> = ({
   onBack,
   onReExecute,
   onNewAnalysis,
+  onNewsADClick,
 }) => {
   // ローディング状態
   if (isLoading) {
@@ -184,7 +186,25 @@ export const ResultTab: React.FC<ResultTabProps> = ({
       </Card>
 
       {/* 分析結果 */}
-      <Card title="📄 分析結果" subtitle="LLMによる比較分析結果">
+      <Card 
+        title="📄 分析結果" 
+        subtitle="LLMによる比較分析結果"
+        headerAction={
+          onNewsADClick && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onNewsADClick}
+              className="flex items-center space-x-2"
+            >
+              <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
+                <span className="text-blue-600 text-xs font-bold">N</span>
+              </div>
+              <span>NewsAD</span>
+            </Button>
+          )
+        }
+      >
         <div className="space-y-4">
           {result.status === 'error' && result.error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">

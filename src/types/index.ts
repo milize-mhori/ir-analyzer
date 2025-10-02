@@ -200,6 +200,18 @@ export interface AnalysisResponse {
 // デフォルトLLMモデル設定
 export const DEFAULT_LLM_MODELS: LLMModel[] = [
   {
+    id: 'azure-gpt-4.1-mini',
+    name: 'Azure GPT-4.1 Mini',
+    provider: 'azure-openai',
+    modelName: 'gpt-4.1-mini',
+    deploymentName: process.env.AZURE_OPENAI_GPT41_MINI_DEPLOYMENT || 'gpt-4.1-mini',
+    maxTokens: 16384,  // GPT-4.1 Miniの最大出力トークン数
+    pricing: {
+      input: 0.00015, // $0.00015 per 1K tokens
+      output: 0.0006, // $0.0006 per 1K tokens
+    },
+  },
+  {
     id: 'azure-gpt-4o',
     name: 'Azure GPT-4o',
     provider: 'azure-openai',
@@ -218,18 +230,6 @@ export const DEFAULT_LLM_MODELS: LLMModel[] = [
     modelName: 'gpt-4o-mini',
     deploymentName: process.env.AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT || 'gpt-4o-mini',
     maxTokens: 16384,  // GPT-4o Miniの最大出力トークン数
-    pricing: {
-      input: 0.00015, // $0.00015 per 1K tokens
-      output: 0.0006, // $0.0006 per 1K tokens
-    },
-  },
-  {
-    id: 'azure-gpt-4.1-mini',
-    name: 'Azure GPT-4.1 Mini',
-    provider: 'azure-openai',
-    modelName: 'gpt-4.1-mini',
-    deploymentName: process.env.AZURE_OPENAI_GPT41_MINI_DEPLOYMENT || 'gpt-4.1-mini',
-    maxTokens: 16384,  // GPT-4.1 Miniの最大出力トークン数
     pricing: {
       input: 0.00015, // $0.00015 per 1K tokens
       output: 0.0006, // $0.0006 per 1K tokens
