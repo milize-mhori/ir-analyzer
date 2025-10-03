@@ -101,7 +101,7 @@ export const CompanyInput: React.FC<CompanyInputProps> = ({
 
   // バリデーション
   const nameError = required && !company.name.trim() ? '企業名（一行目）は必須です' : '';
-  const hasSummaryContent = company.summarySections?.length > 0 || company.summary?.trim();
+  const hasSummaryContent = (company.summarySections?.length ?? 0) > 0 || company.summary?.trim();
   const summaryError = required && !hasSummaryContent ? 'IR要約（二行目以降）は必須です' : '';
   const combinedError = nameError || summaryError;
 
